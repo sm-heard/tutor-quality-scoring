@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tutor Quality Scoring — Simple Dashboard
 
-## Getting Started
+Simple, explainable tutor performance dashboard using mocked data in SQLite. No auth, no testing, no ML.
 
-First, run the development server:
+## Stack
+- Next.js (App Router, TypeScript)
+- Tailwind CSS + shadcn/ui
+- Recharts (charts via shadcn patterns)
+- Drizzle ORM + better‑sqlite3 (SQLite)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Quick Start
+1) Install deps
+   - npm i
+
+2) Configure (defaults are fine)
+   - SQLite file at `.data/app.db` (auto-created by seed).
+
+3) Database: generate, migrate, seed
+   - npm run db:generate   # create SQL migration from schema
+   - npm run db:migrate    # apply migrations to SQLite
+   - npm run db:seed       # build 60d of mocked tutors/sessions
+
+4) Run the app
+   - npm run dev
+
+## Scripts (suggested)
+Add these to `package.json` once the project is scaffolded:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:generate": "drizzle-kit generate:sqlite",
+    "db:migrate": "drizzle-kit migrate:sqlite",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx scripts/seed.ts"
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Data Model (planned)
+- Tutor(id, name, cohort, active, createdAt)
+- Student(id, cohort, createdAt)
+- Session(id, tutorId, studentId, startAt, endAt, firstSession:boolean, rating:1–5, rescheduled:boolean, noShow:boolean)
+- TutorDailyAgg(date, tutorId, noShowRate, rescheduleRate, firstSessionFailRate, avgRating, score)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scoring (no ML)
+S = clamp(0, 100 − 1.4×NS − 1.0×RS − 1.2×FF − Penalty_rating)
+- NS: no‑show rate %, RS: reschedule rate %, FF: first‑session failure rate % (rating < 3)
+- Penalty_rating = max(0, (4.3 − AvgRating)) × 12
+- Bands: High < 60, Medium 60–79, Low ≥ 80
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Pages (planned)
+- Dashboard: KPI cards (NS, RS, FF, Avg Rating, Risk bands), NS/RS/FF trends, risk distribution bar, Top 10 at‑risk table.
+- Tutors: sortable/filterable list with score chips and driver badges.
+- Tutor Profile: score timeline, metric mini‑charts, recent sessions, drivers.
+- Sessions: recent sessions table with flags and filters; CSV export.
 
-## Learn More
+## CSV Export
+- Server route returns CSV for tutors and sessions with computed fields.
+- No external deps required; simple CSV writer/stringifier.
 
-To learn more about Next.js, take a look at the following resources:
+Schemas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Tutors CSV (`/api/export/tutors.csv`)
+- tutorId, name, cohort, score, riskBand
+- noShowRate30d, rescheduleRate30d, firstSessionFailRate30d, avgRating30d, sessions30d
+- drivers (semicolon-delimited)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sessions CSV (`/api/export/sessions.csv`)
+- sessionId, date, tutorId, tutorName, studentId
+- firstSession, rating, rescheduled, noShow
+ - accepts `from`, `to`, `tutorId`, `firstSession`, `rescheduled`, `noShow`
 
-## Deploy on Vercel
+## Environment
+- No secrets required for v1; everything runs locally with SQLite.
+- Future: replace SQLite with Postgres and add cron for hourly aggregates.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Notes & Assumptions
+- All data is mocked; we assume we have ratings, flags for reschedule/no‑show, and first‑session indicator.
+- No auth or role management in v1.
+- Seed data generated via `npm run db:seed` (deterministic with faker seed).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Charts
+- Use shadcn/ui primitives with Recharts components (LineChart, AreaChart, BarChart).
+- Time ranges: default 30d, with quick picks (7/14/30/60).
+- Accessibility: provide labels/tooltips; avoid color-only encodings.
