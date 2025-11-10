@@ -16,7 +16,7 @@ Simple, explainable tutor performance dashboard using mocked data in SQLite. No 
    - SQLite file at `.data/app.db` (auto-created by seed).
 
 3) Database: generate, migrate, seed
-   - npm run db:generate   # create SQL migration from schema
+   - npm run db:generate   # create SQL migration from schema (local dev only)
    - npm run db:migrate    # apply migrations to SQLite
    - npm run db:seed       # build 60d of mocked tutors/sessions
 
@@ -82,6 +82,11 @@ Sessions CSV (`/api/export/sessions.csv`)
 - All data is mocked; we assume we have ratings, flags for reschedule/no‑show, and first‑session indicator.
 - No auth or role management in v1.
 - Seed data generated via `npm run db:seed` (deterministic with faker seed).
+
+## Deployment Notes
+- Next.js server functions need the SQLite file. `next.config.ts` uses `outputFileTracingIncludes` so `.data/app.db` ships with the build.
+- On Vercel, set the build command to `npm run db:migrate && npm run db:seed && npm run build` (skip `db:generate`).
+- The seed step must run before `next build` so the traced DB file exists.
 
 ## Charts
 - Use shadcn/ui primitives with Recharts components (LineChart, AreaChart, BarChart).
