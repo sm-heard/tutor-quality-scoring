@@ -4,35 +4,35 @@ export const RISK_BANDS = [
     label: "Low",
     minScore: 80,
     maxScore: 100,
-    color: "#1A936F",
-    accent: "bg-[color:#1A936F]/15 text-[color:#0F5C45] border-transparent",
+    color: "#10b981",
+    accent: "bg-[color:#10b981]/15 text-[color:#10b981] border-[color:#10b981]/30",
   },
   {
     id: "medium" as const,
     label: "Medium",
     minScore: 60,
     maxScore: 79.99,
-    color: "#F2BF49",
-    accent: "bg-[color:#F2BF49]/15 text-[color:#8A6400] border-transparent",
+    color: "#f59e0b",
+    accent: "bg-[color:#f59e0b]/15 text-[color:#f59e0b] border-[color:#f59e0b]/30",
   },
   {
     id: "high" as const,
     label: "High",
     minScore: 0,
     maxScore: 59.99,
-    color: "#D64545",
-    accent: "bg-[color:#D64545]/15 text-[color:#7A1E1E] border-transparent",
+    color: "#ef4444",
+    accent: "bg-[color:#ef4444]/15 text-[color:#ef4444] border-[color:#ef4444]/30",
   },
 ]
 
 export type RiskBandId = (typeof RISK_BANDS)[number]["id"]
 
 export const CHART_SERIES = {
-  noShow: { label: "No-Show Rate", color: "#D64545" },
-  reschedule: { label: "Reschedule Rate", color: "#F2BF49" },
-  firstSessionFail: { label: "First Session Fail Rate", color: "#7C5E99" },
-  averageRating: { label: "Average Rating", color: "#1A936F" },
-  compositeScore: { label: "Composite Score", color: "#2A70D8" },
+  noShow: { label: "No-Show Rate", color: "#ef4444" },
+  reschedule: { label: "Reschedule Rate", color: "#f59e0b" },
+  firstSessionFail: { label: "First Session Fail Rate", color: "#8b5cf6" },
+  averageRating: { label: "Average Rating", color: "#10b981" },
+  compositeScore: { label: "Composite Score", color: "#06b6d4" },
 }
 
 export const DEFAULT_TIME_RANGE_DAYS = 30
